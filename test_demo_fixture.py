@@ -1,5 +1,7 @@
 from mimetypes import init
-from numpy import append
+import re
+from numpy import append, record
+import py
 import pytest
 
 class Fruit:
@@ -39,3 +41,41 @@ def order(first_entry):
 def test_string(order):
     order.append('b')
     assert order == ['a', 'b']
+
+@pytest.fixture
+def fixt(request):
+    marker = request.node.get_closest_marker("fixt_data")
+    if marker is None:
+        data = None
+    else:
+        data = marker.args[0]
+    
+    return data
+
+@pytest.mark.fixt_data(42)
+def test_fixt(fixt):
+    assert fixt == 42
+
+@pytest.fixture(params=[0, 1], ids=["spam", "ham"])
+def a(request):
+    return request.param
+
+
+def test_a(a):
+    pass
+
+
+def idfn(fixture_value):
+    if fixture_value == 0:
+        return "eggs"
+    else:
+        return None
+
+
+@pytest.fixture(params=[0, 1], ids=idfn)
+def b(request):
+    return request.param
+
+
+def test_b(b):
+    pass
